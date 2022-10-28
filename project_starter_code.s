@@ -65,10 +65,10 @@ GetLastNode:
 	ADDI FP, SP, #24		// set new fp
 	STUR LR, [FP, #-16]	// save the return address
 	
-	
-	LDUR X1, [X0, #8]		// Load address at node
-	STUR X1, [X0, #8]		// Set it as the return value
-	CBNZ X1, GetLastNode
+	LDUR X3, [X0, #8]		// Load address at node
+	ADDI X1, X0, #0		// Copy address to return register incase it is the right one
+	ADD  X0, XZR, X3     	// Go to next address	
+	CBNZ X3, GetLastNode	// Check if it is 0 (NULL)
 
 	LDUR LR, [FP, #-16]	// load the old return address
 	LDUR FP, [FP, #-24]	// load the old frame pointer
