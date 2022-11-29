@@ -13,18 +13,21 @@
 //                    //
 ////////////////////////
 
+  
     // You can modify main function to test your own test cases.
 	// The folloiwng prints unsorted list, call sort function, and print the sorted list again.
-    lda x0, list1      // display original list
+    lda x0, list1      	// display original list
     bl printList
 
-	addi x0, xzr, #10  // \n new line
+	addi x0, xzr, #10  	// \n new line
+			
 	putchar x0
 
     lda x0, list1
-    bl QuickSortWrapper  // return sorted list in x1
+    addi x1, xzr, #16
+    bl Partition		// return sorted list in x1
     add x0, x1, XZR
-    bl printList         // entirely sorted
+    bl printList      	// entirely sorted
 
 	stop
 
@@ -89,7 +92,22 @@ GetNodeWithVal:
  	// output:
 	//     x2: The address of (pointer to) the node with the given value(x1).
 	
-    // INSERT YOUR CODE HERE
+	SUBI SP, SP, #32		// allocate stack frame
+	STUR FP, [SP, #0]		// save old frame pointer
+	ADDI FP, SP, #24		// set new fp
+	STUR LR, [FP, #-16]	// save the return address
+	
+	LDUR X3, [X0, #8]		// Load address at node
+	LDUR X4, [X0, #0]		// Value at node
+	ADDI X2, X0, #0		// Copy address to return register incase it is the right one
+	ADD  X0, XZR, X3     	// Go to next address	
+	SUBS XZR, X1, X4		// Check if it matches the value 
+	B.NE GetNodeWithVal     // If it does not, recurse again
+
+	LDUR LR, [FP, #-16]	// load the old return address
+	LDUR FP, [FP, #-24]	// load the old frame pointer
+	ADDI SP, SP, #32		// deallocate stack
+
 	br lr
 
     
@@ -98,6 +116,10 @@ GetNodeWithVal:
 //     Partition      //
 //                    //
 ////////////////////////
+
+// x4 -> pivot
+// x3 -> cur
+// x2 -> last
 Partition:
 	// input:
 	//     x0: The address of the first node (corresponding to first) of the linked list.
@@ -105,7 +127,52 @@ Partition:
  	// output:
 	//     x2: The address of the first node on the left of the node with the given last node value.
 
-	// INSERT YOUR CODE HERE
+	SUBI SP, SP, #32		// allocate stack frame
+	STUR FP, [SP, #0]		// save old frame pointer
+	ADDI FP, SP, #24		// set new fp
+	STUR LR, [FP, #-16]	// save the return address	
+
+	ADDI X4, X0, #0
+	ADDI X3, X0, #0
+	
+	// SAVE ALL REGISTERS THAT ARE NOT PARAMETERS INTO THE STACK BEFORE EVERY BL
+
+	BL GetNodeWithVal
+	
+	while:
+	SUBIS XZR, X3, #0
+	B.EQ exitloop
+	
+	SUBS XZR, X3, X2
+	B.EQ exitloop
+
+	LDUR X5, [X3, #0]
+	LDUR X6, [X2, #0]
+
+	SUBS XZR, X5, X6
+	B.GT exitif
+
+	ADDI X4, X0, #0
+	ADDI X1, X3, #0
+
+	BL SwapNodeValue
+	LDUR X0, [X0, #8]
+
+	B while
+	
+	exitif:
+	LDUR X3, [X3, #8]
+	
+	exitloop:
+	ADDI X1, X2, #0
+	BL SwapNodeValue
+
+	ADDI X2, X4, #0
+
+	LDUR LR, [FP, #-16]	// load the old return address
+	LDUR FP, [FP, #-24]	// load the old frame pointer
+	ADDI SP, SP, #32		// deallocate stack
+
 	br lr
     
 
