@@ -17,20 +17,19 @@
     // lda x0, list1
     // addi x1, xzr, #16
     // bl Partition
-	// stop
-
-	lda x0, list1
-	bl printList			// Print OG list
-
-	addi x0, xzr, #10
-	putchar x0				// Add new line (\n)
 
     lda x0, list1
-    bl QuickSortWrapper 	// return sorted list in x1
-    add x0, x1, XZR
-    bl printList     		// entirely sorted
+    bl printList            // Print OG list
 
-	stop
+    addi x0, xzr, #10
+    putchar x0              // Add new line (\n)
+
+    lda x0, list1
+    bl QuickSortWrapper     // return sorted list in x1
+    add x0, x1, XZR
+    bl printList            // entirely sorted
+
+    stop
 
 
 ////////////////////////
@@ -39,19 +38,19 @@
 //                    //
 ////////////////////////
 SwapNodeValue:
-	// input:
+    // input:
     //	   x0: The address of (pointer to) one node (corresponding to n1) on the linked list.
     //	   x1: The address of (pointer to) another node (corresponding to n2) on the linked list.
     
-	// Load the two node values
-	LDUR X3, [X0, #0]
-	LDUR X4, [X1, #0]
+    // Load the two node values
+    LDUR X3, [X0, #0]
+    LDUR X4, [X1, #0]
 
-	// Swap and store the two node values
-	STUR X4, [X0, #0]
-	STUR X3, [X1, #0]
+    // Swap and store the two node values
+    STUR X4, [X0, #0]
+    STUR X3, [X1, #0]
 
-	br lr 
+    br lr 
     
 ////////////////////////
 //                    //
@@ -59,26 +58,26 @@ SwapNodeValue:
 //                    //
 ////////////////////////
 GetLastNode:
-	// input:
-	//     x0: The address of (pointer to) a node (corresponding to head) on the linked list.
-	// output:
-	//     x1: The address of the last node of the linked list.
+    // input:
+    //     x0: The address of (pointer to) a node (corresponding to head) on the linked list.
+    // output:
+    //     x1: The address of the last node of the linked list.
 
-	SUBI SP, SP, #32		// allocate stack frame
-	STUR FP, [SP, #0]		// save old frame pointer
-	ADDI FP, SP, #24		// set new fp
-	STUR LR, [FP, #-16]		// save the return address
-	
-	LDUR X3, [X0, #8]		// Load address at node
-	ADDI X1, X0, #0			// Copy address to return register incase it is the right one
-	ADD  X0, XZR, X3     	// Go to next address	
-	CBNZ X3, GetLastNode	// Check if it is 0 (NULL)
+    SUBI SP, SP, #32		// allocate stack frame
+    STUR FP, [SP, #0]		// save old frame pointer
+    ADDI FP, SP, #24		// set new fp
+    STUR LR, [FP, #-16]		// save the return address
 
-	LDUR LR, [FP, #-16]		// load the old return address
-	LDUR FP, [FP, #-24]		// load the old frame pointer
-	ADDI SP, SP, #32		// deallocate stack
+    LDUR X3, [X0, #8]		// Load address at node
+    ADDI X1, X0, #0			// Copy address to return register incase it is the right one
+    ADD  X0, XZR, X3     	// Go to next address	
+    CBNZ X3, GetLastNode	// Check if it is 0 (NULL)
 
-	br lr
+    LDUR LR, [FP, #-16]		// load the old return address
+    LDUR FP, [FP, #-24]		// load the old frame pointer
+    ADDI SP, SP, #32		// deallocate stack
+
+    br lr
 
 
 ////////////////////////
@@ -87,38 +86,38 @@ GetLastNode:
 //                    //
 ////////////////////////
 GetNodeWithVal:
-	// input:
-	//     x0: The address of the node (corresponding to cur) of the input list.
-	//     x1: The value (corresponding to val) of the node it’s looking for.
- 	// output:
-	//     x2: The address of (pointer to) the node with the given value(x1).
+    // input:
+    //     x0: The address of the node (corresponding to cur) of the input list.
+    //     x1: The value (corresponding to val) of the node it’s looking for.
+    // output:
+    //     x2: The address of (pointer to) the node with the given value(x1).
 
-	SUBI SP, SP, #32		// allocate stack frame
-	STUR FP, [SP, #0]		// save old frame pointer
-	ADDI FP, SP, #24		// set new fp
-	STUR LR, [FP, #-16]		// save the return address
-	
-	ADDI X2, X0, #0			// Copy address to return register incase it is the right one
-	SUBIS XZR, X2, #0
-	B.EQ exitloopnode
+    SUBI SP, SP, #32		// allocate stack frame
+    STUR FP, [SP, #0]		// save old frame pointer
+    ADDI FP, SP, #24		// set new fp
+    STUR LR, [FP, #-16]		// save the return address
 
-	LDUR X3, [X0, #8]		// Load address at node
-	LDUR X4, [X0, #0]		// Value at node
-	ADD  X0, XZR, X3     	// Go to next address	
-	SUBS XZR, X1, X4		// Check if it matches the value 
-	B.eq exitloopnode
+    ADDI X2, X0, #0			// Copy address to return register incase it is the right one
+    SUBIS XZR, X2, #0
+    B.EQ exitloopnode
 
-	// NOTE USE BL WHEN DOING RECURSION
+    LDUR X3, [X0, #8]		// Load address at node
+    LDUR X4, [X0, #0]		// Value at node
+    ADD  X0, XZR, X3     	// Go to next address	
+    SUBS XZR, X1, X4		// Check if it matches the value 
+    B.eq exitloopnode
 
-	BL GetNodeWithVal     	// If it does not, recurse again
+    // NOTE USE BL WHEN DOING RECURSION
 
-	exitloopnode:
+    BL GetNodeWithVal     	// If it does not, recurse again
 
-	LDUR LR, [FP, #-16]		// load the old return address
-	LDUR FP, [SP, #0]		// load the old frame pointer
-	ADDI SP, SP, #32		// deallocate stack
+    exitloopnode:
 
-	br lr
+    LDUR LR, [FP, #-16]		// load the old return address
+    LDUR FP, [SP, #0]		// load the old frame pointer
+    ADDI SP, SP, #32		// deallocate stack
+
+    br lr
 
     
 ////////////////////////
@@ -131,95 +130,95 @@ GetNodeWithVal:
 // x4 -> pivot
 // x3 -> cur
 Partition:
-	// input:
-	//     x0: The address of the first node (corresponding to first) of the linked list.
-	//     x1: The value (corresponding to lastVal) of the last node of the linked list.
- 	// output:
-	//     x2: The address of the first node on the left of the node with the given last node value.
+    // input:
+    //     x0: The address of the first node (corresponding to first) of the linked list.
+    //     x1: The value (corresponding to lastVal) of the last node of the linked list.
+    // output:
+    //     x2: The address of the first node on the left of the node with the given last node value.
 
-	SUBI SP, SP, #56 		// allocate stack frame
-	STUR FP, [SP, #0]		// save old frame pointer
-	ADDI FP, SP, #48		// set new fp
-	STUR LR, [FP, #-40]		// save the return address
+    SUBI SP, SP, #56 		// allocate stack frame
+    STUR FP, [SP, #0]		// save old frame pointer
+    ADDI FP, SP, #48		// set new fp
+    STUR LR, [FP, #-40]		// save the return address
 
-	ADDI X4, X0, #0
-	ADDI X3, X0, #0
-	
-	// SAVE ALL REGISTERS THAT ARE NOT PARAMETERS INTO THE STACK BEFORE EVERY BL
+    ADDI X4, X0, #0
+    ADDI X3, X0, #0
 
-	STUR X0, [FP, #-24]
-	STUR X1, [FP, #-16]
-	STUR X3, [FP, #-8]
-	STUR X4, [FP, #0]
+    // SAVE ALL REGISTERS THAT ARE NOT PARAMETERS INTO THE STACK BEFORE EVERY BL
 
-	BL GetNodeWithVal
-	ADDI X5, X2, #0
+    STUR X0, [FP, #-24]
+    STUR X1, [FP, #-16]
+    STUR X3, [FP, #-8]
+    STUR X4, [FP, #0]
 
-	LDUR X0, [FP, #-24]
-	LDUR X1, [FP, #-16]
-	LDUR X3, [FP, #-8]
-	LDUR X4, [FP, #0]
-	
-	while:
-	SUBIS XZR, X3, #0
-	B.EQ exitloop
-	
-	SUBS XZR, X3, X5
-	B.EQ exitloop
+    BL GetNodeWithVal
+    ADDI X5, X2, #0
 
-	// in if statement
+    LDUR X0, [FP, #-24]
+    LDUR X1, [FP, #-16]
+    LDUR X3, [FP, #-8]
+    LDUR X4, [FP, #0]
 
-	LDUR X6, [X3, #0] 		// cur -> data
-	LDUR X7, [X5, #0] 		// last -> data
+    while:
+    SUBIS XZR, X3, #0
+    B.EQ exitloop
 
-	SUBS XZR, X6, X7
-	B.GE exitif
+    SUBS XZR, X3, X5
+    B.EQ exitloop
 
-	ADDI X4, X0, #0			// pivot = first
+    // in if statement
 
-	STUR X1, [FP, #-24] 
-	STUR X4, [FP, #-16]
-	STUR X5, [FP, #-8]
+    LDUR X6, [X3, #0] 		// cur -> data
+    LDUR X7, [X5, #0] 		// last -> data
 
-	ADDI X1, X3, #0
-	BL SwapNodeValue
-	ADDI X3, X1, #0
+    SUBS XZR, X6, X7
+    B.GE exitif
 
-	LDUR X1, [FP, #-24]
-	LDUR X4, [FP, #-16]
-	LDUR X5, [FP, #-8]
+    ADDI X4, X0, #0			// pivot = first
 
-	LDUR X0, [X0, #8]
-	
-	exitif:
-	LDUR X3, [X3, #8]
+    STUR X1, [FP, #-24] 
+    STUR X4, [FP, #-16]
+    STUR X5, [FP, #-8]
 
-	B while
-	
-	exitloop:
-	ADDI X1, X5, #0
+    ADDI X1, X3, #0
+    BL SwapNodeValue
+    ADDI X3, X1, #0
 
-	STUR X1, [FP, #-24] 
-	STUR X3, [FP, #-16]
-	STUR X4, [FP, #-8]
-	STUR X2, [FP, #0]
+    LDUR X1, [FP, #-24]
+    LDUR X4, [FP, #-16]
+    LDUR X5, [FP, #-8]
 
-	ADDI X1, X5, #0 
-	BL SwapNodeValue
-	ADDI X5, X1, #0
+    LDUR X0, [X0, #8]
 
-	LDUR X1, [FP, #-24]
-	LDUR X3, [FP, #-16]
-	LDUR X4, [FP, #-8] 
-	LDUR X2, [FP, #0]
+    exitif:
+    LDUR X3, [X3, #8]
 
-	ADDI X2, X4, #0
+    B while
 
-	LDUR LR, [FP, #-40]		// load the old return address
-	LDUR FP, [FP, #-48]		// load the old frame pointer
-	ADDI SP, SP, #56		// deallocate stack
+    exitloop:
+    ADDI X1, X5, #0
 
-	br lr
+    STUR X1, [FP, #-24] 
+    STUR X3, [FP, #-16]
+    STUR X4, [FP, #-8]
+    STUR X2, [FP, #0]
+
+    ADDI X1, X5, #0 
+    BL SwapNodeValue
+    ADDI X5, X1, #0
+
+    LDUR X1, [FP, #-24]
+    LDUR X3, [FP, #-16]
+    LDUR X4, [FP, #-8] 
+    LDUR X2, [FP, #0]
+
+    ADDI X2, X4, #0
+
+    LDUR LR, [FP, #-40]		// load the old return address
+    LDUR FP, [FP, #-48]		// load the old frame pointer
+    ADDI SP, SP, #56		// deallocate stack
+
+    br lr
     
 
 ////////////////////////
@@ -228,22 +227,22 @@ Partition:
 //                    //
 ////////////////////////
 QuickSort:
-	// input:
-	//     x0: The address of the first node (corresponding to first) of the list.
-	//     x1: The address of the last node (corresponding to last) of the list.
- 	// output:
-	//     x2: The address of the first node of the list.
+    // input:
+    //     x0: The address of the first node (corresponding to first) of the list.
+    //     x1: The address of the last node (corresponding to last) of the list.
+    // output:
+    //     x2: The address of the first node of the list.
 
-	SUBI SP, SP, #72        // allocate stack frame
+    SUBI SP, SP, #72        // allocate stack frame
     STUR FP, [SP, #0]       // save old frame pointer
     ADDI FP, SP, #64        // set new fp
     ///store registers into stack
     STUR X0, [SP, #40]      //save X0 to stack frame
     STUR X1, [SP, #32]      //save X1 to stack
     STUR X2, [SP, #24]      //save X2 to stack
-    
+
     STUR LR, [FP, #-16]     // save the return address
-    
+
     LDUR X0, [X0, #0]   //load value at X0
     LDUR X1, [X1, #0]   //load value at X1
     //first if statement
@@ -261,7 +260,7 @@ QuickSort:
     B.EQ jumpto
     ADD X0, X3, XZR     //make first node new pivot
     BL QuickSort    //call self
-    
+
     jumpto:
     LDUR X3,[X3, #0]    //get original pivot
     SUBS XZR, X3, XZR   //check pivot null
@@ -281,7 +280,7 @@ QuickSort:
     LDUR FP, [SP, #64]    // load the old frame pointer
     ADDI SP, SP, #72        // deallocate stack
 
-	br lr 
+    br lr 
 
 ////////////////////////
 //                    //
@@ -289,23 +288,23 @@ QuickSort:
 //                    //
 ////////////////////////
 QuickSortWrapper:
-	// input:
-	//     x0: The address of the first node (corresponding to first) of the list.
- 	// output:
-	//     x1: The address of the first node of the list.
-	
+    // input:
+    //     x0: The address of the first node (corresponding to first) of the list.
+    // output:
+    //     x1: The address of the first node of the list.
+
     SUBI SP, SP, #72        // allocate stack frame
     STUR FP, [SP, #0]       // save old frame pointer
     ADDI FP, SP, #64        // set new fp
-	
+
     ///store registers into stack
     STUR X0, [SP, #40]      //save X0 to stack frame
     STUR X1, [SP, #32]      //save X1 to stack
     STUR X2, [SP, #24]      //save X2 to stack
-    
+
     BL getLastNode  //has first node as parameter
     ADD X1, X2, XZR //return first node of sorted list
-    
+
 
     STUR LR, [FP, #-16]     // save the return address
     LDUR LR, [FP, #-16]    // load the old return address
@@ -323,20 +322,20 @@ QuickSortWrapper:
 ////////////////////////
 printList:
     // x0: node address
-	addi x3, xzr, #45
-	addi x4, xzr, #62
-	addi x5, xzr, #88
-	addi x6, xzr, #10
+    addi x3, xzr, #45
+    addi x4, xzr, #62
+    addi x5, xzr, #88
+    addi x6, xzr, #10
 printList_loop:
     subis xzr, x0, #0
     b.eq printList_loopEnd
     ldur x1, [x0, #0]
     putint x1
-	ldur x0, [x0, #8]
+    ldur x0, [x0, #8]
     putchar x3
     putchar x4
     b printList_loop
 printList_loopEnd:    
     putchar x5
-	putchar x6
+    putchar x6
     br lr
