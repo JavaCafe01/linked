@@ -1,4 +1,4 @@
-# quick
+# quicksort-legv8
 
 A Quick Sort implementation for a Linked List using Legv8.
 
